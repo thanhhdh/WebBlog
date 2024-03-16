@@ -1,3 +1,5 @@
+using AspNetCoreHero.ToastNotification;
+using AspNetCoreHero.ToastNotification.Extensions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using WebBlog.Data;
@@ -21,6 +23,7 @@ namespace WebBlog
                 .AddDefaultTokenProviders();
 
             builder.Services.AddScoped<IDbInitializer, DbInitializer>();
+            builder.Services.AddNotyf(config => { config.DurationInSeconds = 10; config.IsDismissable = true; config.Position = NotyfPosition.BottomRight; });
 
             var app = builder.Build();
             DataSeeding();
@@ -30,11 +33,13 @@ namespace WebBlog
                 app.UseExceptionHandler("/Home/Error");
                 app.UseHsts();
             }
+            app.UseNotyf();
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
 
             app.UseRouting();
+            app.UseAuthentication();
 
             app.UseAuthorization();
 
