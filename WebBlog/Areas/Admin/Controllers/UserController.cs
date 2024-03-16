@@ -29,7 +29,11 @@ namespace WebBlog.Areas.Admin.Controllers
         [HttpGet("Login")]
         public IActionResult Login()
         {
-            return View(new LoginVm());
+            if(!HttpContext.User.Identity.IsAuthenticated)
+            {
+                return View(new LoginVm());
+            }
+            return RedirectToAction("Index", "User", new {area = "Admin"});
         }
 
         [HttpPost("Login")]
@@ -54,6 +58,14 @@ namespace WebBlog.Areas.Admin.Controllers
             await _signInManager.PasswordSignInAsync(vm.UserName, vm.Password, vm.RememberMe, true);
             _notyfService.Success("Login Successful");
             return RedirectToAction("Index", "User", new {area = "Admin"});
+        }
+
+        [HttpPost]
+        public IActionResult Logout()
+        {
+            _signInManager.SignOutAsync();
+            _notyfService.Success("You are logout successfully!");
+            return RedirectToAction("Index","Home", new {area = ""});
         }
     }
 }
