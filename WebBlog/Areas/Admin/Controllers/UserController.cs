@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebBlog.Data;
 using WebBlog.Models;
+using WebBlog.Utilites;
 using WebBlog.ViewModels;
 
 namespace WebBlog.Areas.Admin.Controllers
@@ -36,6 +37,55 @@ namespace WebBlog.Areas.Admin.Controllers
                 UserName = x.UserName,
             }).ToList();
             return View(vm);
+        }
+
+        [Authorize(Roles = "Admin")]
+        public IActionResult Register()
+        {
+            return View(new RegisterVM());
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPost]
+        public async Task<IActionResult> Register(RegisterVM vm)
+        {
+            if(!ModelState.IsValid)
+            {
+                return View(vm);
+            }
+            var checkUserByEmail = await _userManager.FindByEmailAsync(vm.Email);
+            if(checkUserByEmail != null)
+            {
+                _notyfService.Error("Email already exists");
+                return View(vm);
+            }
+            var checkUserByUserName = await _userManager.FindByNameAsync(vm.UserName);
+            if (checkUserByUserName != null)
+            {
+                _notyfService.Error("Username already exists");
+                return View(vm);
+            }
+            var applicationUser = new ApplicationUser()
+            {
+                Email = vm.Email,
+                FirstName = vm.FirstName,
+                LastName = vm.LastName,
+                UserName = vm.UserName,
+            };
+            var result = await _userManager.CreateAsync(applicationUser, vm.Password);
+            if(result.Succeeded)
+            {
+                if(vm.IsAdmin)
+                {
+                    await _userManager.AddToRoleAsync(applicationUser, WebsiteRoles.WebsiteAdmin);
+                } else
+                {
+                    await _userManager.AddToRoleAsync(applicationUser, WebsiteRoles.WebsiteAuthor);
+                }
+                _notyfService.Success("User registered successfully!");
+                RedirectToAction("Index", "User", new { area = "Admin" });
+            }
+            return View(vm); 
         }
 
         [HttpGet("Login")]
