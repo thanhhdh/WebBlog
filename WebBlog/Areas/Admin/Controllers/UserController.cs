@@ -35,9 +35,58 @@ namespace WebBlog.Areas.Admin.Controllers
                 FirstName = x.FirstName,
                 LastName = x.LastName,
                 UserName = x.UserName,
+                Email = x.Email,
             }).ToList();
+            foreach (var user in vm)
+            {
+                var singleUser = await _userManager.FindByIdAsync(user.Id);
+                var role = await _userManager.GetRolesAsync(singleUser);
+                user.Role = role.FirstOrDefault();
+            }
             return View(vm);
         }
+
+        [Authorize(Roles ="Admin")]
+        [HttpGet]
+        public async Task<IActionResult> ResetPassword(string id)
+        {
+            var existUser = await _userManager.FindByIdAsync(id);
+            if(existUser == null)
+            {
+                _notyfService.Error("User does not exist!");
+                return View();
+            }
+            var vm = new ResetPasswordVM()
+            {
+                Id = existUser.Id,
+                UserName = existUser.UserName,
+            };
+            return View(vm);
+
+        } 
+
+        [Authorize(Roles = "Admin")]
+        [HttpPost]
+        public async Task<IActionResult> ResetPassword(ResetPasswordVM vm)
+        {
+            if (!ModelState.IsValid) { return View(vm); };
+
+            var existUser = await _userManager.FindByIdAsync(vm.Id);
+            if(existUser == null)
+            {
+                _notyfService.Error("User does not exists!");
+                return View(vm); ;
+            }
+            var token = await _userManager.GeneratePasswordResetTokenAsync(existUser);
+            var result = await _userManager.ResetPasswordAsync(existUser, token, vm.NewPassword);
+            if (result.Succeeded)
+            {
+                _notyfService.Success("Password reset successfully!");
+                return RedirectToAction(nameof(Index));
+            }
+            return View(vm);
+        }
+
 
         [Authorize(Roles = "Admin")]
         public IActionResult Register()
@@ -93,13 +142,13 @@ namespace WebBlog.Areas.Admin.Controllers
         {
             if(!HttpContext.User.Identity.IsAuthenticated)
             {
-                return View(new LoginVm());
+                return View(new LoginVM());
             }
             return RedirectToAction("Index", "User", new {area = "Admin"});
         }
 
         [HttpPost("Login")]
-        public async Task<IActionResult> Login(LoginVm vm)
+        public async Task<IActionResult> Login(LoginVM vm)
         {
             if(!ModelState.IsValid)
             {

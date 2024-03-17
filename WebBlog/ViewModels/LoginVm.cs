@@ -2,7 +2,7 @@
 
 namespace WebBlog.ViewModels
 {
-    public class LoginVm
+    public class LoginVM
     {
         [Required]
         public string UserName { get; set; }
