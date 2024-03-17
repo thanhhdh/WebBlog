@@ -168,7 +168,7 @@ namespace WebBlog.Areas.Admin.Controllers
             }
             await _signInManager.PasswordSignInAsync(vm.UserName, vm.Password, vm.RememberMe, true);
             _notyfService.Success("Login Successful");
-            return RedirectToAction("Index", "User", new {area = "Admin"});
+            return RedirectToAction("Index", "Post", new {area = "Admin"});
         }
 
         [HttpPost]
@@ -177,6 +177,13 @@ namespace WebBlog.Areas.Admin.Controllers
             _signInManager.SignOutAsync();
             _notyfService.Success("You are logout successfully!");
             return RedirectToAction("Index","Home", new {area = ""});
+        }
+
+        [HttpGet("AccessDenied")]
+        [Authorize]
+        public IActionResult AccessDenied()
+        {
+            return View();
         }
     }
 }
