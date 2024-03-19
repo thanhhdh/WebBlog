@@ -1,9 +1,9 @@
-﻿@model List<WebBlog.ViewModels.UserVM>
+﻿@model List<WebBlog.ViewModels.PostVm>
 @{
     ViewData["Title"] = "Index";
 }
 <div class="container-fluid">
-    <a class="btn btn-primary mb-1" >Add Post</a>
+    <a class="btn btn-primary mb-1" asp-action="Create" asp-controller="Post" asp-area="Admin">Add Post</a>
 
     <div class="card">
         <div class="card-header bg-primary">
@@ -11,8 +11,36 @@
                 List of Posts
             </h4>
         </div>
-        <div class="card-body">
-           
+        <div class="card-body" style="background-color:lightgray">
+            @foreach(var post in Model)
+            {
+                <div class="rounded mb-2 bg-white p-2" >
+                    <div class="row">
+                        <div class="col-2 d-flex justify-content-center flex-column" >
+                            @if(post.ThumbnailUrl == null)
+                            {
+                                <img class="img-fluid" src="~/thumbnails/default.png" style="object-fit:fill; border: 1px solid #ebebeb; height:100px; width:150px" />
+                            } else
+                            {
+                                <img class="img-fluid" src="~/thumbnails/@post.ThumbnailUrl" style="object-fit:fill; border: 1px solid #ebebeb; height:100px; height:100px; width:150px" />
+                            }
+                        </div>
+                         <div class="col-5 d-flex justify-content-center flex-column">
+                            <h4 style="font-size: 1rem" class="text-primary fw-bold">@post.Title</h4>
+                            <p>@post.CreatedDate</p>
+                        </div>
+                        <div class="col-5 text-right d-flex justify-content-center flex-column">
+                            <h4 style="font-size: 1rem" class="fw-bold">@post.AuthorName</h4>
+                            <p>
+                                <a class="btn btn-warning">Edit</a>
+                                <form method="post" asp-action="Delete" asp-controller="Post" asp-area="Admin" asp-route-id="@post.Id" onsubmit="return confirm('Do you want to delete this post?')">
+                                    <button type="submit" class="btn btn-danger" >Delete</button>
+                                </form>
+                            </p>
+                        </div>
+                    </div> 
+                </div>
+            }
         </div>
     </div>
 </div>
