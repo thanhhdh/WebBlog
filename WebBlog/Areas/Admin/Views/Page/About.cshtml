@@ -1,27 +1,24 @@
-﻿@model WebBlog.ViewModels.CreatePostVM
+﻿@model WebBlog.ViewModels.PageVM
 
 @{
-    ViewData["Title"] = "Create Post";
+    ViewData["Title"] = "About Page";
 }
 
 <div class="container-fluid">
-    <a class="btn btn-primary mb-1" asp-action="Index" asp-controller="Post">Back</a>
+    <a class="btn btn-primary mb-1" asp-action="Index" asp-controller="Page">Back</a>
     <div class="card">
         <div class="card-header bg-primary">
             <h4 class="card-title text-white">
-                New Post
+                About Page
             </h4>
         </div>
         <div class="card-body">
-            <form asp-action="Create" asp-controller="Post" asp-area="Admin" enctype="multipart/form-data">
+            <form asp-action="About" asp-controller="Page" asp-area="Admin" enctype="multipart/form-data">
+                <input type="hidden" asp-for="Id" />
+                <input type="hidden" asp-for="ThumbnailUrl" />
 
                 <div class="row">
                     <div class="col-9">
-                        <div class="mb-2">
-                            <label>Add Tags</label>
-                            @Html.ListBox("selectedTags", ViewBag.tags,
-                                     new { @class = "w-100", id = "selectedTags" })
-                        </div>
                         <div class="mb-2">
                             <label>Title</label>
                             <input type="text" asp-for="Title" class="form-control" />
@@ -40,7 +37,14 @@
                     </div>
                     <div class="col-3">
                         <div class="mb-2">
-                            <img src="~/thumbnails/default.png" class="img-fluid" id="thumbnail"/>
+                            @if (Model.ThumbnailUrl == null)
+                            {
+                                <img src="~/thumbnails/default.png" class="img-fluid" id="thumbnail" />
+                            }
+                            else
+                            {
+                                <img src="~/thumbnails/@Model.ThumbnailUrl" class="img-fluid" id="thumbnail" onerror="this.src='~/thumbnails/default.png';" />
+                            }
                         </div>
                         <div class="mb-2">
                             <label class=".custom-file-label">Thumbnail</label>
@@ -57,10 +61,9 @@
         </div>
     </div>
 </div>
-@section Scripts{
+@section Scripts {
     <partial name="_ValidationScriptsPartial" />
-    <script src="~/admin/vendor/multiple-select/multiple-select.min.js"></script>
-    <link rel="stylesheet" href="~/admin/vendor/multiple-select/multiple-select.min.css" />
+
     <script>
         $(".custom-file").on("change", function () {
             var fileName = $(this).val().split("\\").pop();
@@ -73,12 +76,6 @@
             if ($(e.target).closest(".tox-tinymce, .tox-tinymce-aux, .moxman-window, .tam-assetmanager-root").length) {
                 e.stopImmediatePropagation();
             }
-        });
-
-        $('#selectedTags').multipleSelect({
-            selectAll: false,
-            keepOpen: false,
-            isOpen: false
         });
     </script>
 }

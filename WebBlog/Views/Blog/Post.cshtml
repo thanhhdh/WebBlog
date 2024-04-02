@@ -1,0 +1,45 @@
+﻿@model WebBlog.ViewModels.BlogPostVM
+@{
+    ViewData["Title"] = "Post";
+    
+    string pageThumbnail = "";
+    if (Model.ThumbnailUrl == null)
+    {
+
+        pageThumbnail = "/blog/assets/img/home-bg.jpg";
+    }
+    else
+    {
+        pageThumbnail = "/thumbnails/" + Model.ThumbnailUrl;
+
+    }
+}
+
+<header class="py-5 bg-light border-bottom mb-4" style="background-image: url(@pageThumbnail); background-repeat: no-repeat;">
+    <div class="container position-relative px-4 px-lg-5">
+        <div class="row gx-4 gx-lg-5 justify-content-center">
+            <div class="col-md-10 col-lg-8 col-xl-7">
+                <div class="post-heading">
+                    <h1>@Model.Title</h1>
+                    <h2 class="subheading">@Model.ShortDescription</h2>
+                    <span class="meta">
+                        Posted by
+                        @Model.AuthorName
+                        @Model.CreatedDate
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+
+<article class="mb-4">
+    <div class="container px-4 px-lg-5">
+        <div class="row gx-4 gx-lg-5 justify-content-center">
+            <div class="col-md-10 col-lg-8 col-xl-7">
+                @Html.Raw(Model.Description);
+            </div>
+        </div>
+    </div>
+</article>

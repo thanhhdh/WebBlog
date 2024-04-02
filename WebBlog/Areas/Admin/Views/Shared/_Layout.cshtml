@@ -78,13 +78,24 @@
                          data-parent="#accordionSidebar">
                         <div class="bg-white py-2 collapse-inner rounded">
                             <h6 class="collapse-header">Custom Utilities:</h6>
-                            <a class="collapse-item" href="utilities-color.html">About</a>
-                            <a class="collapse-item" href="utilities-border.html">Contact</a>
-                            <a class="collapse-item" href="utilities-animation.html">Privacy Policy</a>
+                            <a class="collapse-item" asp-action="About" asp-controller="Page">About</a>
+                            <a class="collapse-item" asp-action="Contact" asp-controller="Page">Contact</a>
+                            <a class="collapse-item" asp-action="Privacy" asp-controller="Page">Privacy Policy</a>
                         </div>
                     </div>
                 </li>
-
+                <li class="nav-item active">
+                    <a class="nav-link" asp-action="Index" asp-controller="Tag" asp-area="Admin">
+                        <i class="fas fa-fw fa-gear"></i>
+                        <span>Tag</span>
+                    </a>
+                </li>
+                <li class="nav-item active">
+                    <a class="nav-link" asp-action="Index" asp-controller="Setting" asp-area="Admin">
+                        <i class="fas fa-fw fa-gear"></i>
+                        <span>Setting</span>
+                    </a>
+                </li>
                 <!-- Divider -->
                 <hr class="sidebar-divider d-none d-md-block">
             }
@@ -184,8 +195,15 @@
     <script src="~/admin/js/demo/chart-area-demo.js"></script>
     <script src="~/admin/js/demo/chart-pie-demo.js"></script>
     <script src="https://cdn.datatables.net/2.0.2/js/dataTables.min.js"></script>
+    <script src="https://cdn.tiny.cloud/1/kz30ihzz4087ur7qaas2s4qwliwb713ytcc51a6nda57axei/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
     <script>
+        //Datatables
         let table = new DataTable('#userTable');
+        
+        //Integrate TinyMCE
+        tinymce.init({
+            selector: 'textarea#tiny'
+        });
         
     </script>
 
