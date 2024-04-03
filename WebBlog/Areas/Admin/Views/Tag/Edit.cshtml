@@ -1,7 +1,7 @@
 ﻿@model WebBlog.ViewModels.TagVM
 
 @{
-    ViewData["Title"] = "Create Tag";
+    ViewData["Title"] = "Edit Tag";
 }
 
 <div class="container-fluid">
@@ -13,7 +13,7 @@
             </h4>
         </div>
         <div class="card-body">
-            <form asp-action="Create" asp-controller="Tag" asp-area="Admin" enctype="multipart/form-data">
+            <form asp-action="Edit" asp-controller="Tag" asp-area="Admin" enctype="multipart/form-data">
                 <input type="hidden" asp-for="Id" />
 
                 <div class="row">

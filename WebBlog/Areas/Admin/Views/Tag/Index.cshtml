@@ -26,9 +26,14 @@
                         <tr>
                             <td>@tag.Title</td>
                             <td>@tag.Slug</td>
-                            <td>
-                                <a class="btn btn-warning" asp-controller="Tag" asp-route-id="@tag.Id">Edit</a>
-                                <a class="btn btn-error" asp-controller="Tag" asp-route-id="@tag.Id">Delete</a>
+                            <td >
+                                <div class="align-items-center d-flex">
+
+                                <a class="btn btn-warning" asp-action="Edit" asp-controller="Tag" asp-route-id="@tag.Id">Edit</a>
+                                <form method="post" asp-action="delete" asp-controller="Tag" asp-route-id="@tag.Id" asp-area="Admin">
+                                    <button type="submit" class="btn btn-danger" >Delete</button>
+                                </form>
+                                </div>
                             </td>
                         </tr>
                     }

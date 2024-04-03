@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using System.Text;
+using System.Text.RegularExpressions;
 using WebBlog.Data;
 using WebBlog.Models;
 using WebBlog.Utilites;
@@ -85,8 +87,15 @@ namespace WebBlog.Areas.Admin.Controllers
                 post.ApplicationUserId = loggedInUser!.Id;
                 if (post.Title != null)
                 {
-                    string slug = vm.Title!.Trim();
-                    slug = slug.Replace(" ", "-");
+                    Regex regex = new Regex("\\p{IsCombiningDiacriticalMarks}+");
+
+                    string slug = vm.Title!.Normalize(NormalizationForm.FormD).Trim().ToLower();
+                    slug = regex.Replace(slug, String.Empty)
+                          .Replace('\u0111', 'd').Replace('\u0110', 'D')
+                          .Replace(",", "-").Replace(".", "-").Replace("!", "")
+                          .Replace("(", "").Replace(")", "").Replace(";", "-")
+                          .Replace("/", "-").Replace("%", "ptram").Replace("&", "va")
+                          .Replace("?", "").Replace('"', '-').Replace(' ', '-');
                     post.Slug = slug + "-" + Guid.NewGuid();
                 }
                 if (vm.Thumbnail != null)
@@ -134,7 +143,9 @@ namespace WebBlog.Areas.Admin.Controllers
         [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
-            var post = await _context.Posts!.FirstOrDefaultAsync(x => x.Id == id);
+            var post = await _context.Posts!.Where(x => x.Id == id)
+                .Include(p => p.PostTags)
+                .ThenInclude(t => t.Tag).FirstOrDefaultAsync();
             if (post == null)
             {
                 _notyfService.Error("Post not found!");
@@ -156,32 +167,51 @@ namespace WebBlog.Areas.Admin.Controllers
                 Description = post.Description,
                 ThumbnailUrl = post.ThumbnailUrl,
             };
+            var selectedTags = post.PostTags.Select(p => p.Tag).ToArray();
+            var tags = await _context.Tags.ToListAsync();
+            ViewData["tags"] = new MultiSelectList(tags, "Id", "Title", selectedTags);
             return View(vm);
         }
         [HttpPost]
         public async Task<IActionResult> Edit(CreatePostVM vm)
         {
-            if(!ModelState.IsValid)
+            if(ModelState.IsValid)
             {
-                return View(vm);
+                var post = await _context.Posts.Where(x => x.Id == vm.Id)
+                    .Include(p => p.PostTags)
+                    .ThenInclude(t => t.Tag).FirstOrDefaultAsync();
+                if (post == null)
+                {
+                    _notyfService.Error("Post not found!");
+                    return View();
+                }
+                post.Title = vm.Title;
+                post.ShortDescription = vm.ShortDescription;
+                post.Description = vm.Description;
+                if(vm.Thumbnail != null)
+                {
+                    post.ThumbnailUrl = UploadImage(vm.Thumbnail);
+                }
+                //tag k co trong selectedTags
+                var removeTag = post.PostTags.Where(p => !selectedTags.Contains(p.TagId)).ToList();
+                removeTag.ForEach(t => post.PostTags.Remove(t));
+                //id tag chua co trong post.PostTags
+                var listTagAdd = selectedTags.Where(id => !post.PostTags.Where(t => t.TagId == id).Any()).ToList();
+                listTagAdd.ForEach(id =>
+                {
+                    post.PostTags.Add(new PostTag()
+                    {
+                        PostId = post.Id,
+                        TagId = id
+                    });
+                });
+                await _context.SaveChangesAsync();
+                _notyfService.Success("Post updated successfully!");
+                return RedirectToAction("Index", "Post", new { area = "Admin" });
             }
-            var post = await _context.Posts.FirstOrDefaultAsync(x => x.Id == vm.Id);
-            if (post == null)
-            {
-                _notyfService.Error("Post not found!");
-                return View();
-            }
-            post.Title = vm.Title;
-            post.ShortDescription = vm.ShortDescription;
-            post.Description = vm.Description;
-            if(vm.Thumbnail != null)
-            {
-                post.ThumbnailUrl = UploadImage(vm.Thumbnail);
-            }
-
-            await _context.SaveChangesAsync();
-            _notyfService.Success("Post updated successfully!");
-            return RedirectToAction("Index", "Post", new { area = "Admin" });
+            var tags = await _context.Tags.ToListAsync();
+            ViewData["tags"] = new MultiSelectList(tags, "Id", "Title", selectedTags);
+            return View(vm);
         }
 
         private string UploadImage(IFormFile file)
